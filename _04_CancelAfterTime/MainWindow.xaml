@@ -1,0 +1,15 @@
+﻿<Window x:Class="_04_CancelAfterTime.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:_04_CancelAfterTime"
+        mc:Ignorable="d"
+        Title="Cancel A Task After Specified Time" Height="450" Width="468.75">
+    <Grid>
+        <Button x:Name="btnStart" Content="Start" HorizontalAlignment="Left" Margin="26,36,0,0" VerticalAlignment="Top" Width="136" Height="46" Click="BtnStart_Click"/>
+        <Button x:Name="btnCancel" Content="Cancel" HorizontalAlignment="Left" Height="46" Margin="218,36,0,0" VerticalAlignment="Top" Width="154" Click="BtnCancel_Click"/>
+        <TextBox x:Name="txtResult" HorizontalAlignment="Left" Height="303" Margin="10,107,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="442"/>
+
+    </Grid>
+</Window>

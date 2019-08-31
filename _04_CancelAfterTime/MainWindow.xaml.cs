@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,13 +16,14 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace _01_InitialProject
+namespace _04_CancelAfterTime
 {
   /// <summary>
   /// Interaction logic for MainWindow.xaml
   /// </summary>
   public partial class MainWindow : Window
   {
+    CancellationTokenSource cts;
     public MainWindow()
     {
       InitializeComponent();
@@ -30,38 +32,39 @@ namespace _01_InitialProject
     private async void BtnStart_Click(object sender, RoutedEventArgs e)
     {
       txtResult.Clear();
-      txtResult.Text += "Ready for Download.\n";
-
-      // Get the URL List
-      var Urls = SetupURLs();
-
-      // Process each URLs
-      await ProcessURLsAsync(Urls);
+      txtResult.Text += "Ready for download ... \n";
+      cts = new CancellationTokenSource();
+      cts.CancelAfter(4000);  // Cancel after 4 Secs
+      await ProcessUrlsAsync(cts.Token);
     }
 
-    private async Task ProcessURLsAsync(List<string> urls)
+    private async Task ProcessUrlsAsync(CancellationToken token)
     {
+      var urls = GetUrls();
       ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
       ServicePointManager.ServerCertificateValidationCallback += delegate { return true; };
+      HttpClient client = new HttpClient();
       try
       {
-        HttpClient client = new HttpClient();
         foreach (var url in urls)
         {
-          HttpResponseMessage response = await client.GetAsync(url);
-          byte[] content = await response.Content.ReadAsByteArrayAsync();
-          txtResult.Text += $"{url} \t {content.Length}\n";
-          await Task.Delay(250);
+          HttpResponseMessage httpResponse = await client.GetAsync(url, token);
+          byte[] contents = await httpResponse.Content.ReadAsByteArrayAsync();
+          txtResult.Text += $"{url} \t {contents.Length}\n";
         }
-        txtResult.Text += "Download completed.\n";
+        txtResult.Text += "Download completed ... \n";
+      }
+      catch (OperationCanceledException)
+      {
+        txtResult.Text += "Download canceled ... \n";
       }
       catch (Exception)
       {
-        txtResult.Text += "Download failed. \n";
+        txtResult.Text += "Download failed ... \n";
       }
     }
 
-    private List<string> SetupURLs() => new List<string>
+    private List<string> GetUrls() => new List<string>
     {
       "http://msdn.microsoft.com",
       "http://msdn.microsoft.com/library/windows/apps/br211380.aspx",
@@ -71,5 +74,11 @@ namespace _01_InitialProject
       "http://msdn.microsoft.com/en-us/library/ms404677.aspx",
       "http://msdn.microsoft.com/en-us/library/ff730837.aspx"
     };
+
+    private void BtnCancel_Click(object sender, RoutedEventArgs e)
+    {
+      if (cts != null)
+        cts.Cancel();
+    }
   }
 }
